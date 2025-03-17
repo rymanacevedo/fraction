@@ -13,6 +13,9 @@ export default defineConfig(({ isSsrBuild }) => ({
   },
   server: {
     allowedHosts: true,
+    watch: {
+      usePolling: true,
+    },
   },
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
 }));

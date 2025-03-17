@@ -8,96 +8,83 @@ const app = new Hono();
 
 app.use(cors());
 
-const syncBaseballData = async () => {
-  try {
-    const response = await fetch(
-      "https://api.hirefraction.com/api/test/baseball",
-    );
-    const players: Player[] = await response.json();
-
-    // Sort players by hits per season to calculate ranks
-    const sortedPlayers = [...players].sort((a, b) => b.Hits - a.Hits);
-
-    // Assign ranks
-    // sortedPlayers.forEach((player, index) => {
-    //   player.rank = index + 1;
-    //   db.insertPlayer(
-    //     player.name,
-    //     player.team,
-    //     player.position,
-    //     player.hitsPerSeason,
-    //     player.rank
-    //   );
-    // });
-
-    console.log("Baseball data synced successfully");
-  } catch (error) {
-    console.error("Error syncing baseball data:", error);
-  }
-};
-
 // Routes
 app.get("/", (c) => c.text("Baseball Stats API"));
 
-// Get all players
-app.get("/api/players", (c) => {
-  return c.json(db.getPlayers());
-});
-
-// Get player by ID
-app.get("/api/players/:id", (c) => {
-  const id = parseInt(c.req.param("id"));
-  const player = db.getPlayerById(id);
-  if (!player) {
-    return c.json({ error: "Player not found" }, 404);
+app.get("/api/players", async (c) => {
+  try {
+    const players = db.getPlayers();
+    return c.json(players);
+  } catch (error) {
+    console.error("Error fetching players:", error);
+    return c.json({ error: "Failed to fetch players" }, 500);
   }
-  return c.json(player);
 });
 
-// Update player
+app.get("/api/players/:id", async (c) => {
+  try {
+    const id = parseInt(c.req.param("id"));
+    const player = db.getPlayerById(id);
+
+    if (!player) {
+      return c.json({ error: "Player not found" }, 404);
+    }
+
+    return c.json(player);
+  } catch (error) {
+    console.error("Error fetching player:", error);
+    return c.json({ error: "Failed to fetch player" }, 500);
+  }
+});
+
+app.get("/api/players/:id", async (c) => {
+  try {
+    const id = parseInt(c.req.param("id"));
+    const player = db.getPlayerById(id);
+
+    if (!player) {
+      return c.json({ error: "Player not found" }, 404);
+    }
+
+    return c.json(player);
+  } catch (error) {
+    console.error("Error fetching player:", error);
+    return c.json({ error: "Failed to fetch player" }, 500);
+  }
+});
+
 app.put("/api/players/:id", async (c) => {
-  const id = parseInt(c.req.param("id"));
-  const player: Player = await c.req.json();
-  // db.updatePlayer(
-  //   id,
-  //   player.name,
-  //   player.team,
-  //   player.position,
-  //   player.hitsPerSeason,
-  //   player.rank
-  // );
-  return c.json({ success: true });
+  try {
+    const id = parseInt(c.req.param("id"));
+    const player = db.getPlayerById(id);
+
+    if (!player) {
+      return c.json({ error: "Player not found" }, 404);
+    }
+
+    const playerData = await c.req.json();
+    db.updatePlayer(id, playerData);
+
+    return c.json({ success: true });
+  } catch (error) {
+    console.error("Error updating player:", error);
+    return c.json({ error: "Failed to update player" }, 500);
+  }
 });
 
 // Generate player description using LLM
-app.get("/api/players/:id/generate-description", async (c) => {
-  const id = parseInt(c.req.param("id"));
-  const player = db.getPlayerById(id);
-
-  if (!player) {
-    return c.json({ error: "Player not found" }, 404);
-  }
-
+app.post("/api/players/:id/generate-description", async (c) => {
   try {
-    const { description } = await createBaseballDescriptions("", player);
-    // const completion = await openai.chat.completions.create({
-    //   model: "gpt-3.5-turbo",
-    //   messages: [
-    //     {
-    //       role: "system",
-    //       content: "You are a baseball expert and sports journalist.",
-    //     },
-    //     {
-    //       role: "user",
-    //       content: `Write a brief description (2-3 paragraphs) about a baseball player with the following stats:
-    //       Name: ${player.name}
-    //       Team: ${player.team}
-    //       Position: ${player.position}
-    //       Hits Per Season: ${player.hitsPerSeason}
-    //       Rank: ${player.rank} (based on hits per season)`,
-    //     },
-    //   ],
-    // });
+    const id = parseInt(c.req.param("id"));
+    const player: Player = db.getPlayerById(id);
+
+    if (!player) {
+      return c.json({ error: "Player not found" }, 404);
+    }
+
+    // Here you would call the LLM service, for now it's just mock data
+    const description = `${player["Player name"]} is a ${player.position} player with ${player.Hits} career hits and ${player.Runs} home runs. With a batting average of ${player.AVG}, they rank #${Number(1).toString()} in hits per season.`;
+
     db.updatePlayerDescription(id, description);
 
     return c.json({ description });
@@ -107,7 +94,58 @@ app.get("/api/players/:id/generate-description", async (c) => {
   }
 });
 
-// Initialize the database with data from API on startup
-syncBaseballData();
+app.delete("/api/players/:id", async (c) => {
+  try {
+    const id = parseInt(c.req.param("id"));
+    const player = db.getPlayerById(id);
+
+    if (!player) {
+      return c.json({ error: "Player not found" }, 404);
+    }
+
+    db.deletePlayer(id);
+
+    return c.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting player:", error);
+    return c.json({ error: "Failed to delete player" }, 500);
+  }
+});
+
+app.post("/api/sync", async (c) => {
+  try {
+    const response = await fetch(
+      "https://api.hirefraction.com/api/test/baseball",
+    );
+
+    if (!response.ok) {
+      return c.json({ error: "Failed to fetch from baseball API" }, 500);
+    }
+
+    const players: Player[] = await response.json();
+
+    // Calculate ranks based on hits per season
+    const sortedPlayers = [...players].sort((a, b) => b.Hits - a.Hits);
+
+    for (let i = 0; i < sortedPlayers.length; i++) {
+      const player = sortedPlayers[i];
+
+      // Transform the API data to match our schema
+      const playerData = {
+        name: player["Player name"],
+        position: player.position,
+        hitsPerSeason: player.Hits,
+        rank: i + 1,
+      };
+
+      db.createPlayer(playerData);
+    }
+
+    return c.json({ success: true, count: players.length });
+  } catch (error) {
+    console.error("Error syncing data:", error);
+    return c.json({ error: "Failed to sync data" }, 500);
+  }
+});
 
 export default app;

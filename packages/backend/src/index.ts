@@ -1,36 +1,8 @@
-import { Hono } from 'hono'
+import { Hono } from "hono";
 import { cors } from "hono/cors";
-import * as db from './database'; 
-import { z } from 'zod';
-import { createBaseballDescriptions } from './services/ai';
-
-
-
-const PlayerSchema = z.object({
-  "Player name": z.string(),
-  position: z.string(),
-  Games: z.number(),
-  "At-bat": z.number(),
-  Runs: z.number(),
-  Hits: z.number(),
-  "Double (2B)": z.number(),
-  "third baseman": z.number(),
-  "home run": z.number(),
-  "run batted in": z.number(),
-  "a walk": z.number(),
-  Strikeouts: z.number(),
-  "stolen base": z.number(),
-  "Caught stealing": z.union([z.number(), z.string()]),
-  AVG: z.number(),
-  "On-base Percentage": z.number(),
-  "Slugging Percentage": z.number(),
-  "On-base Plus Slugging": z.number(),
-});
-
-const PlayersSchema = z.array(PlayerSchema);
-
-export type Player = z.infer<typeof PlayerSchema>;
-export type Players = z.infer<typeof PlayersSchema>;
+import * as db from "./database";
+import { createBaseballDescriptions } from "./services/ai";
+import { Player } from "../../shared/models/Player";
 
 const app = new Hono();
 
@@ -39,14 +11,12 @@ app.use(cors());
 const syncBaseballData = async () => {
   try {
     const response = await fetch(
-      "https://api.hirefraction.com/api/test/baseball"
+      "https://api.hirefraction.com/api/test/baseball",
     );
-    const players: Players = await response.json();
+    const players: Player[] = await response.json();
 
     // Sort players by hits per season to calculate ranks
-    const sortedPlayers = [...players].sort(
-      (a, b) => b.Hits - a.Hits
-    );
+    const sortedPlayers = [...players].sort((a, b) => b.Hits - a.Hits);
 
     // Assign ranks
     // sortedPlayers.forEach((player, index) => {
@@ -103,14 +73,13 @@ app.put("/api/players/:id", async (c) => {
 app.get("/api/players/:id/generate-description", async (c) => {
   const id = parseInt(c.req.param("id"));
   const player = db.getPlayerById(id);
-  
+
   if (!player) {
     return c.json({ error: "Player not found" }, 404);
   }
 
   try {
-
-    const { description } = await createBaseballDescriptions('', player);
+    const { description } = await createBaseballDescriptions("", player);
     // const completion = await openai.chat.completions.create({
     //   model: "gpt-3.5-turbo",
     //   messages: [
@@ -120,7 +89,7 @@ app.get("/api/players/:id/generate-description", async (c) => {
     //     },
     //     {
     //       role: "user",
-    //       content: `Write a brief description (2-3 paragraphs) about a baseball player with the following stats: 
+    //       content: `Write a brief description (2-3 paragraphs) about a baseball player with the following stats:
     //       Name: ${player.name}
     //       Team: ${player.team}
     //       Position: ${player.position}
@@ -130,7 +99,7 @@ app.get("/api/players/:id/generate-description", async (c) => {
     //   ],
     // });
     db.updatePlayerDescription(id, description);
-    
+
     return c.json({ description });
   } catch (error) {
     console.error("Error generating description:", error);
@@ -141,4 +110,4 @@ app.get("/api/players/:id/generate-description", async (c) => {
 // Initialize the database with data from API on startup
 syncBaseballData();
 
-export default app
+export default app;

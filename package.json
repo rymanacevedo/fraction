@@ -1,0 +1,12 @@
+{
+    "name": "fraction-monorepo",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+        "packages/backend",
+        "packages/db"
+    ],
+    "devDependencies": {
+        "@biomejs/biome": "^1.9.4"
+    }
+}

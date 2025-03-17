@@ -1,0 +1,10 @@
+{
+    "name": "fraction-db",
+    "version": "0.0.1",
+    "type": "module",
+    "private": true,
+    "dependencies": {
+      "sqlite3": "^5.1.7"
+    }
+  }
+  

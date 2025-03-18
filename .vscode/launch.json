@@ -9,12 +9,8 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "never",
       "cwd": "${workspaceFolder}/packages/backend",
-      "runtimeExecutable": "/home/codespace/.bun/bin/bun",  // Exact path from your system
-      "runtimeArgs": [
-        "run",
-        "--inspect",
-        "--hot"
-      ],
+      "runtimeExecutable": "/home/codespace/.bun/bin/bun", // Exact path from your system
+      "runtimeArgs": ["run", "--inspect", "--hot"],
       "program": "src/index.ts",
       "port": 9229
     }

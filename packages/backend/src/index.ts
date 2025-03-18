@@ -1,10 +1,10 @@
+import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import * as db from "./database";
-import { createBaseballDescriptions } from "./services/ai";
-import { serve } from "@hono/node-server";
 import { DBPlayer, Player } from "../../shared/models/Player";
 import { transformPlayer } from "../../shared/utils/TransformPlayer";
+import * as db from "./database";
+import { createBaseballDescriptions } from "./services/ai";
 
 const app = new Hono();
 
@@ -74,7 +74,6 @@ app.put("/api/players/:id", async (c) => {
   }
 });
 
-// Generate player description using LLM
 app.get("/api/players/:id/generate-description", async (c) => {
   try {
     const id = parseInt(c.req.param("id"));

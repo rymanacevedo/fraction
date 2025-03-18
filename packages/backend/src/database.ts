@@ -37,12 +37,14 @@ export const getPlayers = (): DBPlayer[] => {
 };
 
 export const getPlayerByName = (playerName: string): DBPlayer | null => {
-  return db.query("SELECT * FROM players WHERE playerName = $playerName")
+  return db
+    .query("SELECT * FROM players WHERE playerName = $playerName")
     .get({ $playerName: playerName }) as DBPlayer | null;
 };
 
 export const getPlayerById = (id: number): DBPlayer | null => {
-  return db.query("SELECT * FROM players WHERE id = $id")
+  return db
+    .query("SELECT * FROM players WHERE id = $id")
     .get({ $id: id }) as DBPlayer | null;
 };
 
@@ -90,7 +92,7 @@ export const createPlayer = (player: DBPlayer) => {
       $onBasePlusSlugging
     )
   `);
-  
+
   return stmt.run({
     $playerName: player.playerName,
     $rank: player.rank,
@@ -110,7 +112,7 @@ export const createPlayer = (player: DBPlayer) => {
     $avg: player.avg,
     $onBasePercentage: player.onBasePercentage,
     $sluggingPercentage: player.sluggingPercentage,
-    $onBasePlusSlugging: player.onBasePlusSlugging
+    $onBasePlusSlugging: player.onBasePlusSlugging,
   });
 };
 
@@ -138,7 +140,7 @@ export const updatePlayer = (id: number, player: DBPlayer) => {
       onBasePlusSlugging = $onBasePlusSlugging
     WHERE id = $id
   `);
-  
+
   return stmt.run({
     $id: id,
     $playerName: player.playerName,
@@ -159,7 +161,7 @@ export const updatePlayer = (id: number, player: DBPlayer) => {
     $avg: player.avg,
     $onBasePercentage: player.onBasePercentage,
     $sluggingPercentage: player.sluggingPercentage,
-    $onBasePlusSlugging: player.onBasePlusSlugging
+    $onBasePlusSlugging: player.onBasePlusSlugging,
   });
 };
 

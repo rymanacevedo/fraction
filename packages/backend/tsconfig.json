@@ -5,12 +5,12 @@
     "strict": true,
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
-    "target": "es2020",        // Or a more recent ES version
-    "module": "esnext",       // Or "commonjs" if you prefer
+    "target": "es2020", // Or a more recent ES version
+    "module": "esnext", // Or "commonjs" if you prefer
     "moduleResolution": "node",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["es2020", "dom"],
-    "types": ["bun-types"],
+    "types": ["bun-types"]
   }
 }

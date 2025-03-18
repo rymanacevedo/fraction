@@ -1,5 +1,5 @@
-import { generateObject } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { generateObject } from "ai";
 import { z } from "zod";
 import { DBPlayer } from "../../../shared/models/Player";
 const google = createGoogleGenerativeAI();

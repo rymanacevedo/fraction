@@ -1,12 +1,13 @@
 {
-    "name": "fraction-monorepo",
-    "version": "1.0.0",
-    "private": true,
-    "workspaces": [
-        "packages/backend",
-        "packages/frontend"
-    ],
-    "devDependencies": {
-        "@biomejs/biome": "^1.9.4"
-    }
+  "name": "fraction-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "lint": "biome check .",
+    "format": "biome format . --write"
+  },
+  "workspaces": ["packages/backend", "packages/frontend"],
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4"
+  }
 }

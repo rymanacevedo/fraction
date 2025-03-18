@@ -2,36 +2,53 @@ import {
   Form,
   data,
   redirect,
-  useLoaderData,
   useNavigate,
   useRouteLoaderData,
 } from "react-router";
 import type { Route } from "../+types/root";
-import type { DBPlayer } from "../../../shared/models/Player";
+import { DBPlayerSchema, type DBPlayer } from "../../../shared/models/Player";
 
-export async function action({ request, params }: Route.ActionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
-  const playerName = params.playerName;
-  const entries = Object.fromEntries(formData);
+  const entries = Object.fromEntries(formData) as Record<string, string>;
 
-  // Extract values from form
-  const updates = {
-    "Player name": formData.get("playerName") as string,
-    position: formData.get("position") as string,
-    Games: parseInt(formData.get("games") as string),
-    Hits: parseInt(formData.get("hits") as string),
-    "home run": parseInt(formData.get("homeRuns") as string),
-    AVG: parseFloat(formData.get("avg") as string),
-    // Add other fields as needed
+  const updatedPlayer: DBPlayer = {
+    id: parseInt(entries.id),
+    playerName: entries.playerName,
+    position: entries.position,
+    rank: parseInt(entries.rank),
+    games: parseInt(entries.games),
+    atBat: parseInt(entries.atBat),
+    runs: parseInt(entries.runs),
+    hits: parseInt(entries.hits),
+    doubles: parseInt(entries.doubles),
+    thirdBaseman: parseInt(entries.thirdBaseman),
+    homeRun: parseInt(entries.homeRuns),
+    rbi: parseInt(entries.rbi),
+    aWalk: parseInt(entries.aWalk),
+    strikeouts: parseInt(entries.strikeouts),
+    stolenBases: parseInt(entries.stolenBases),
+    caughtStealing: parseInt(entries.caughtStealing),
+    avg: parseFloat(entries.avg),
+    onBasePercentage: parseFloat(entries.onBasePercentage),
+    sluggingPercentage: parseFloat(entries.sluggingPercentage),
+    onBasePlusSlugging: parseFloat(entries.onBasePlusSlugging),
   };
 
-  // In a real app, you would send the updates to your API
-  console.log("Updating player:", playerName, "with data:", updates);
+  DBPlayerSchema.parse(updatedPlayer);
 
-  // Redirect to the player detail page after successful update
-  return redirect(
-    `/dashboard/player/${encodeURIComponent(updates["Player name"])}`,
+  const response = await fetch(
+    `https://effective-adventure-xrxjjr9j6793vr7g-3001.app.github.dev/api/players/${updatedPlayer.id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedPlayer),
+    },
   );
+  // Redirect to the player detail page after successful update
+  return redirect(`/dashboard/player/${encodeURIComponent(updatedPlayer.id)}`);
 }
 
 export default function PlayerEdit() {
@@ -88,6 +105,7 @@ export default function PlayerEdit() {
                     type="text"
                     name="playerName"
                     id="playerName"
+                    defaultValue={player?.playerName}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     required
                   />
@@ -105,6 +123,7 @@ export default function PlayerEdit() {
                     id="position"
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     required
+                    defaultValue={player?.position}
                   >
                     <option value="C">Catcher (C)</option>
                     <option value="1B">First Base (1B)</option>
@@ -131,6 +150,7 @@ export default function PlayerEdit() {
                     name="games"
                     id="games"
                     min="0"
+                    defaultValue={player?.games}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     required
                   />
@@ -148,6 +168,7 @@ export default function PlayerEdit() {
                     name="hits"
                     id="hits"
                     min="0"
+                    defaultValue={player?.hits}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     required
                   />
@@ -165,6 +186,7 @@ export default function PlayerEdit() {
                     name="homeRuns"
                     id="homeRuns"
                     min="0"
+                    defaultValue={player?.homeRun}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     required
                   />
@@ -183,12 +205,56 @@ export default function PlayerEdit() {
                     id="avg"
                     min="0"
                     max="1"
+                    defaultValue={player?.avg}
                     step="0.001"
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     required
                   />
                 </div>
               </div>
+              {/* Hidden fields for remaining DBPlayer properties */}
+              <input type="hidden" name="id" value={player?.id} />
+              <input type="hidden" name="rank" value={player?.rank} />
+              <input type="hidden" name="atBat" value={player?.atBat} />
+              <input type="hidden" name="runs" value={player?.runs} />
+              <input type="hidden" name="doubles" value={player?.doubles} />
+              <input
+                type="hidden"
+                name="thirdBaseman"
+                value={player?.thirdBaseman}
+              />
+              <input type="hidden" name="rbi" value={player?.rbi} />
+              <input type="hidden" name="aWalk" value={player?.aWalk} />
+              <input
+                type="hidden"
+                name="strikeouts"
+                value={player?.strikeouts}
+              />
+              <input
+                type="hidden"
+                name="stolenBases"
+                value={player?.stolenBases}
+              />
+              <input
+                type="hidden"
+                name="caughtStealing"
+                value={player?.caughtStealing}
+              />
+              <input
+                type="hidden"
+                name="onBasePercentage"
+                value={player?.onBasePercentage}
+              />
+              <input
+                type="hidden"
+                name="sluggingPercentage"
+                value={player?.sluggingPercentage}
+              />
+              <input
+                type="hidden"
+                name="onBasePlusSlugging"
+                value={player?.onBasePlusSlugging}
+              />
 
               <div className="mt-6 flex items-center space-x-4">
                 <button

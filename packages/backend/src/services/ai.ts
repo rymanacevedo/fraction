@@ -1,31 +1,39 @@
-import { generateObject } from "ai"
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { generateObject } from "ai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { z } from "zod";
-import { Player } from "..";
+import { DBPlayer } from "../../../shared/models/Player";
 const google = createGoogleGenerativeAI();
-const model = google('gemini-2.0-flash-exp', {
-    // safetySettings: [
-    //     { category: 'HARM_CATEGORY_UNSPECIFIED', threshold: 'BLOCK_LOW_AND_ABOVE' },
-    //   ],
+const model = google("gemini-2.0-flash-exp", {
+  // safetySettings: [
+  //     { category: 'HARM_CATEGORY_UNSPECIFIED', threshold: 'BLOCK_LOW_AND_ABOVE' },
+  //   ],
 });
 
-const DescriptionSchema = z.object({
-    description: z.string().describe('A 2-3 paragraph description of a baseball player.')
-})
-export const createBaseballDescriptions = async(prompt: string, player: Player) => {
-    const result = await generateObject({
-        model: model,
-        prompt,
-        schema: DescriptionSchema,
-        schemaName: 'Descriptions',
-        system: `
+const PlayerDescriptionSchema = z.object({
+  description: z
+    .string()
+    .describe("A 2-3 paragraph description of a baseball player."),
+  name: z.string().describe("The name of the baseball player."),
+  position: z.string().describe("The position of the baseball player."),
+  hits: z.number().describe("The number of hits the baseball player has."),
+});
+export const createBaseballDescriptions = async (
+  prompt: string,
+  player: DBPlayer,
+) => {
+  const result = await generateObject({
+    model: model,
+    prompt,
+    schema: PlayerDescriptionSchema,
+    schemaName: "PlayerDescriptions",
+    system: `
         You are a baseball expert and sports journalist.
         Write a brief description (2-3 paragraphs) about a baseball player with the following stats:
-        Name: ${player["Player name"]}
+        Name: ${player.playerName}
         Position: ${player.position}
-        Hits Per Season: ${player.Hits}
-        `
-    })
+        Hits Per Season: ${player.hits}
+        `,
+  });
 
-    return result.object;
-}
+  return result.object;
+};

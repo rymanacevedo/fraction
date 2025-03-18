@@ -75,7 +75,7 @@ app.put("/api/players/:id", async (c) => {
 });
 
 // Generate player description using LLM
-app.post("/api/players/:id/generate-description", async (c) => {
+app.get("/api/players/:id/generate-description", async (c) => {
   try {
     const id = parseInt(c.req.param("id"));
     const player = db.getPlayerById(id) as unknown as DBPlayer;

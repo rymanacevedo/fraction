@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { data, useLoaderData, Link } from "react-router";
+import { data, useLoaderData, Link, useFetcher } from "react-router";
 import type { Route } from "../+types/root";
 import type { DBPlayer } from "../../../shared/models/Player";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  console.log(params.id);
-  const response = await fetch(`https://effective-adventure-xrxjjr9j6793vr7g-3001.app.github.dev/api/players/${params.id}`);
-    const player: DBPlayer = await response.json();
+  const response = await fetch(
+    `https://effective-adventure-xrxjjr9j6793vr7g-3001.app.github.dev/api/players/${params.id}`,
+  );
+  const player: DBPlayer = await response.json();
   return data(player);
 }
 
@@ -21,13 +22,13 @@ export default function PlayerDetail() {
     const generateDescription = async () => {
       setIsLoadingDescription(true);
       try {
-        // In a real app, you would call your AI backend service here
-        // For now, we'll simulate a response after a delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const response = await fetch(
+          `https://effective-adventure-xrxjjr9j6793vr7g-3001.app.github.dev/api/players/${player.id}/generate-description`,
+        );
 
-        const description = `${player.playerName} is a legendary ${player.position} known for accumulating ${player.hits} hits throughout their illustrious career. With ${player.homeRun} home runs and ${player.caughtStealing} RBIs, they have established themselves as one of baseball's greatest hitters.\n\nTheir career batting average of ${player.avg} and on-base percentage of ${player.onBasePercentage} demonstrate their exceptional ability to both hit for power and get on base consistently.`;
+        const description = await response.json();
 
-        setPlayerDescription(description);
+        setPlayerDescription(description.description);
       } catch (error) {
         console.error("Error generating description:", error);
       } finally {
@@ -70,27 +71,18 @@ export default function PlayerDetail() {
           <div className="h-24 flex items-center justify-center text-gray-500 italic">
             Generating description...
           </div>
-        ) : playerDescription ? (
-          <div className="bg-white dark:bg-gray-700 p-4 rounded-md border-l-4 border-blue-500 shadow-sm">
-            {playerDescription.split("\n\n").map((paragraph, idx) => (
-              <p
-                key={idx}
-                className={`text-sm text-gray-700 dark:text-gray-300 ${idx > 0 ? "mt-3" : ""}`}
-              >
-                {paragraph}
-              </p>
-            ))}
-          </div>
         ) : (
-          <p className="text-sm text-gray-500 italic">
-            No description available
-          </p>
+          <div className="bg-white dark:bg-gray-700 p-4 rounded-md border-l-4 border-blue-500 shadow-sm">
+            <p className={`text-sm text-gray-700 dark:text-gray-300`}>
+              {playerDescription}
+            </p>
+          </div>
         )}
       </div>
 
       <div className="mt-6">
         <Link
-          to={`/dashboard/player/${encodeURIComponent(player.playerName)}/edit`}
+          to={`/dashboard/player/${encodeURIComponent(player.id)}/edit`}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Edit Player

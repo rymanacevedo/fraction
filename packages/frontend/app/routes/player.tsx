@@ -1,65 +1,17 @@
 import { useEffect, useState } from "react";
 import { data, useLoaderData, Link } from "react-router";
 import type { Route } from "../+types/root";
-import type { Player } from "../../../shared/models/Player";
+import type { DBPlayer } from "../../../shared/models/Player";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  const playerName = params.playerName;
-
-  const players = [
-    {
-      "Player name": "B Bonds",
-      position: "LF",
-      Games: 2986,
-      "At-bat": 9847,
-      Runs: 2227,
-      Hits: 2935,
-      "Double (2B)": 601,
-      "third baseman": 77,
-      "home run": 762,
-      "run batted in": 1996,
-      "a walk": 2558,
-      Strikeouts: 1539,
-      "stolen base": 514,
-      "Caught stealing": 141,
-      AVG: 0.298,
-      "On-base Percentage": 0.444,
-      "Slugging Percentage": 0.607,
-      "On-base Plus Slugging": 1.051,
-    },
-    {
-      "Player name": "H Aaron",
-      position: "RF",
-      Games: 3298,
-      "At-bat": 12364,
-      Runs: 2174,
-      Hits: 3771,
-      "Double (2B)": 624,
-      "third baseman": 98,
-      "home run": 755,
-      "run batted in": 2297,
-      "a walk": 1402,
-      Strikeouts: 1383,
-      "stolen base": 240,
-      "Caught stealing": 73,
-      AVG: 0.305,
-      "On-base Percentage": 0.374,
-      "Slugging Percentage": 0.555,
-      "On-base Plus Slugging": 0.929,
-    },
-  ];
-
-  const player = players.find((p) => p["Player name"] === playerName);
-
-  if (!player) {
-    throw new Response("Player not found", { status: 404 });
-  }
-
+  console.log(params.id);
+  const response = await fetch(`https://effective-adventure-xrxjjr9j6793vr7g-3001.app.github.dev/api/players/${params.id}`);
+    const player: DBPlayer = await response.json();
   return data(player);
 }
 
 export default function PlayerDetail() {
-  const player = useLoaderData<Player>();
+  const player = useLoaderData<DBPlayer>();
   const [playerDescription, setPlayerDescription] = useState<string | null>(
     null,
   );
@@ -73,7 +25,7 @@ export default function PlayerDetail() {
         // For now, we'll simulate a response after a delay
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        const description = `${player["Player name"]} is a legendary ${player.position} known for accumulating ${player.Hits} hits throughout their illustrious career. With ${player["home run"]} home runs and ${player["run batted in"]} RBIs, they have established themselves as one of baseball's greatest hitters.\n\nTheir career batting average of ${player.AVG} and on-base percentage of ${player["On-base Percentage"]} demonstrate their exceptional ability to both hit for power and get on base consistently.`;
+        const description = `${player.playerName} is a legendary ${player.position} known for accumulating ${player.hits} hits throughout their illustrious career. With ${player.homeRun} home runs and ${player.caughtStealing} RBIs, they have established themselves as one of baseball's greatest hitters.\n\nTheir career batting average of ${player.avg} and on-base percentage of ${player.onBasePercentage} demonstrate their exceptional ability to both hit for power and get on base consistently.`;
 
         setPlayerDescription(description);
       } catch (error) {
@@ -89,7 +41,7 @@ export default function PlayerDetail() {
   return (
     <div className="p-6">
       <h2 className="text-xl font-bold text-gray-900 pb-3 border-b border-gray-200 dark:text-white">
-        {player["Player name"]}
+        {player.playerName}
       </h2>
 
       <div className="mt-4 space-y-2">
@@ -97,16 +49,16 @@ export default function PlayerDetail() {
           <span className="font-medium">Position:</span> {player.position}
         </p>
         <p className="text-sm text-gray-700 dark:text-gray-300">
-          <span className="font-medium">Games:</span> {player.Games}
+          <span className="font-medium">Games:</span> {player.games}
         </p>
         <p className="text-sm text-gray-700 dark:text-gray-300">
-          <span className="font-medium">Hits:</span> {player.Hits}
+          <span className="font-medium">Hits:</span> {player.hits}
         </p>
         <p className="text-sm text-gray-700 dark:text-gray-300">
-          <span className="font-medium">Home Runs:</span> {player["home run"]}
+          <span className="font-medium">Home Runs:</span> {player.homeRun}
         </p>
         <p className="text-sm text-gray-700 dark:text-gray-300">
-          <span className="font-medium">Batting Average:</span> {player.AVG}
+          <span className="font-medium">Batting Average:</span> {player.avg}
         </p>
       </div>
 
@@ -138,7 +90,7 @@ export default function PlayerDetail() {
 
       <div className="mt-6">
         <Link
-          to={`/dashboard/player/${encodeURIComponent(player["Player name"])}/edit`}
+          to={`/dashboard/player/${encodeURIComponent(player.playerName)}/edit`}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Edit Player

@@ -1,64 +1,15 @@
 import { data, Outlet, useLoaderData, useNavigate } from "react-router";
 import type { Route } from "../+types/root";
-import type { Player } from "../../../shared/models/Player";
+import type { DBPlayer } from "../../../shared/models/Player";
 
 export async function loader({ request }: Route.LoaderArgs) {
-  // const response = await fetch('http://')
-
-  const players = [
-    {
-      "Player name": "B Bonds",
-      position: "LF",
-      Games: 2986,
-      "At-bat": 9847,
-      Runs: 2227,
-      Hits: 2935,
-      "Double (2B)": 601,
-      "third baseman": 77,
-      "home run": 762,
-      "run batted in": 1996,
-      "a walk": 2558,
-      Strikeouts: 1539,
-      "stolen base": 514,
-      "Caught stealing": 141,
-      AVG: 0.298,
-      "On-base Percentage": 0.444,
-      "Slugging Percentage": 0.607,
-      "On-base Plus Slugging": 1.051,
-    },
-    {
-      "Player name": "H Aaron",
-      position: "RF",
-      Games: 3298,
-      "At-bat": 12364,
-      Runs: 2174,
-      Hits: 3771,
-      "Double (2B)": 624,
-      "third baseman": 98,
-      "home run": 755,
-      "run batted in": 2297,
-      "a walk": 1402,
-      Strikeouts: 1383,
-      "stolen base": 240,
-      "Caught stealing": 73,
-      AVG: 0.305,
-      "On-base Percentage": 0.374,
-      "Slugging Percentage": 0.555,
-      "On-base Plus Slugging": 0.929,
-    },
-  ];
-  const playersWithRanks = [...players]
-    .sort((a, b) => b.Hits - a.Hits)
-    .map((player, index) => ({
-      ...player,
-      rank: index + 1,
-    }));
-
-  return data(playersWithRanks);
+  const response = await fetch('https://effective-adventure-xrxjjr9j6793vr7g-3001.app.github.dev/api/players');
+  const players: DBPlayer[] = await response.json();
+  return data(players);
 }
 
 export default function Dashboard() {
-  const players = useLoaderData<(Player & { rank: number })[]>();
+  const players = useLoaderData<DBPlayer[]>();
   const navigate = useNavigate();
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -68,7 +19,7 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Player list table */}
-        <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+        <div className="overflow-y-auto shadow ring-1 ring-black ring-opacity-5 rounded-lg max-h-96">
           <table className="min-w-full divide-y divide-gray-300">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
@@ -107,11 +58,11 @@ export default function Dashboard() {
             <tbody className="divide-y divide-gray-200 bg-white dark:bg-gray-700">
               {players.map((player) => (
                 <tr
-                  key={player["Player name"]}
+                  key={player.id}
                   className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600`}
                   onClick={() =>
                     navigate(
-                      `/dashboard/player/${encodeURIComponent(player["Player name"])}`,
+                      `/dashboard/player/${encodeURIComponent(player.id)}`,
                     )
                   }
                 >
@@ -119,13 +70,13 @@ export default function Dashboard() {
                     {player.rank}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                    {player["Player name"]}
+                    {player.playerName}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
                     {player.position}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                    {player.Hits}
+                    {player.hits}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     {/* <Link

@@ -4,8 +4,7 @@
     "private": true,
     "workspaces": [
         "packages/backend",
-        "packages/frontend",
-        "packages/db"
+        "packages/frontend"
     ],
     "devDependencies": {
         "@biomejs/biome": "^1.9.4"

@@ -1,6 +1,3 @@
-Here's a README.md for your monorepo:
-
-
 # Fraction - Baseball Stats Monorepo
 
 A monorepo containing a full-stack application for baseball statistics management and analysis.

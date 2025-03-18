@@ -1,107 +1,170 @@
-
+import { Database } from "bun:sqlite";
 import { join } from "path";
-import { Player } from "../../shared/models/Player";
-import { Database } from "sqlite3";
+import { DBPlayer } from "../../shared/models/Player";
 
-// Initialize the database
+// Initialize the database with Bun's SQLite
 const dbPath = join(__dirname, "../database/baseball.db");
 const db = new Database(dbPath);
 
-// Create tables if they don't exist
-db.exec(`
+// Create the players table
+db.run(`
   CREATE TABLE IF NOT EXISTS players (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    team TEXT,
-    position TEXT,
-    hitsPerSeason INTEGER,
+    playerName TEXT NOT NULL,
     rank INTEGER,
+    position TEXT,
     games INTEGER,
     atBat INTEGER,
     runs INTEGER,
     hits INTEGER,
     doubles INTEGER,
-    triples INTEGER,
-    homeRuns INTEGER,
+    thirdBaseman INTEGER,
+    homeRun INTEGER,
     rbi INTEGER,
-    walks INTEGER,
+    aWalk INTEGER,
     strikeouts INTEGER,
     stolenBases INTEGER,
     caughtStealing INTEGER,
-    battingAvg REAL,
+    avg REAL,
     onBasePercentage REAL,
     sluggingPercentage REAL,
-    ops REAL,
-    description TEXT
+    onBasePlusSlugging REAL
   )
 `);
 
-export const getPlayers = (): Player[] => {
-  return db.prepare("SELECT * FROM players").all();
+export const getPlayers = (): DBPlayer[] => {
+  return db.query("SELECT * FROM players").all() as DBPlayer[];
 };
 
-export const getPlayerByName = (name: string): Player => {
-  return db.prepare("SELECT * FROM players WHERE name = ?").get(name);
+export const getPlayerByName = (playerName: string): DBPlayer | null => {
+  return db.query("SELECT * FROM players WHERE playerName = $playerName")
+    .get({ $playerName: playerName }) as DBPlayer | null;
 };
 
-export const getPlayerById = (id: number): Player => {
-  return db.prepare("SELECT * FROM players WHERE id = ?").get(id);
+export const getPlayerById = (id: number): DBPlayer | null => {
+  return db.query("SELECT * FROM players WHERE id = $id")
+    .get({ $id: id }) as DBPlayer | null;
 };
 
-export const createPlayer = (player: Player) => {
+export const createPlayer = (player: DBPlayer) => {
   const stmt = db.prepare(`
     INSERT INTO players (
-      name, team, position, hitsPerSeason, rank, games, atBat, runs, hits,
-      doubles, triples, homeRuns, rbi, walks, strikeouts, stolenBases,
-      caughtStealing, battingAvg, onBasePercentage, sluggingPercentage, ops
+      playerName,
+      rank,
+      position,
+      games,
+      atBat,
+      runs,
+      hits,
+      doubles,
+      thirdBaseman,
+      homeRun,
+      rbi,
+      aWalk,
+      strikeouts,
+      stolenBases,
+      caughtStealing,
+      avg,
+      onBasePercentage,
+      sluggingPercentage,
+      onBasePlusSlugging
     ) VALUES (
-      @name, @team, @position, @hitsPerSeason, @rank, @games, @atBat, @runs, @hits,
-      @doubles, @triples, @homeRuns, @rbi, @walks, @strikeouts, @stolenBases,
-      @caughtStealing, @battingAvg, @onBasePercentage, @sluggingPercentage, @ops
+      $playerName,
+      $rank,
+      $position,
+      $games,
+      $atBat,
+      $runs,
+      $hits,
+      $doubles,
+      $thirdBaseman,
+      $homeRun,
+      $rbi,
+      $aWalk,
+      $strikeouts,
+      $stolenBases,
+      $caughtStealing,
+      $avg,
+      $onBasePercentage,
+      $sluggingPercentage,
+      $onBasePlusSlugging
     )
   `);
-
-  const result = stmt.run(player);
-  return result.lastInsertRowid;
+  
+  return stmt.run({
+    $playerName: player.playerName,
+    $rank: player.rank,
+    $position: player.position,
+    $games: player.games,
+    $atBat: player.atBat,
+    $runs: player.runs,
+    $hits: player.hits,
+    $doubles: player.doubles,
+    $thirdBaseman: player.thirdBaseman,
+    $homeRun: player.homeRun,
+    $rbi: player.rbi,
+    $aWalk: player.aWalk,
+    $strikeouts: player.strikeouts,
+    $stolenBases: player.stolenBases,
+    $caughtStealing: player.caughtStealing,
+    $avg: player.avg,
+    $onBasePercentage: player.onBasePercentage,
+    $sluggingPercentage: player.sluggingPercentage,
+    $onBasePlusSlugging: player.onBasePlusSlugging
+  });
 };
 
-export const updatePlayer = (id: number, player: Player) => {
+export const updatePlayer = (id: number, player: DBPlayer) => {
   const stmt = db.prepare(`
     UPDATE players SET 
-      name = @name, 
-      position = @position, 
-      hitsPerSeason = @hitsPerSeason, 
-      rank = @rank,
-      games = @games,
-      atBat = @atBat,
-      runs = @runs,
-      hits = @hits,
-      doubles = @doubles,
-      triples = @triples,
-      homeRuns = @homeRuns,
-      rbi = @rbi,
-      walks = @walks,
-      strikeouts = @strikeouts,
-      stolenBases = @stolenBases,
-      caughtStealing = @caughtStealing,
-      battingAvg = @battingAvg,
-      onBasePercentage = @onBasePercentage,
-      sluggingPercentage = @sluggingPercentage,
-      ops = @ops
-    WHERE id = ?
+      playerName = $playerName,
+      rank = $rank,
+      position = $position,
+      games = $games,
+      atBat = $atBat,
+      runs = $runs,
+      hits = $hits,
+      doubles = $doubles,
+      thirdBaseman = $thirdBaseman,
+      homeRun = $homeRun,
+      rbi = $rbi,
+      aWalk = $aWalk,
+      strikeouts = $strikeouts,
+      stolenBases = $stolenBases,
+      caughtStealing = $caughtStealing,
+      avg = $avg,
+      onBasePercentage = $onBasePercentage,
+      sluggingPercentage = $sluggingPercentage,
+      onBasePlusSlugging = $onBasePlusSlugging
+    WHERE id = $id
   `);
-
-  return stmt.run({ ...player, id }, id);
-};
-
-export const updatePlayerDescription = (id: number, description: string) => {
-  return db
-    .prepare("UPDATE players SET description = ? WHERE id = ?")
-    .run(description, id);
+  
+  return stmt.run({
+    $id: id,
+    $playerName: player.playerName,
+    $rank: player.rank,
+    $position: player.position,
+    $games: player.games,
+    $atBat: player.atBat,
+    $runs: player.runs,
+    $hits: player.hits,
+    $doubles: player.doubles,
+    $thirdBaseman: player.thirdBaseman,
+    $homeRun: player.homeRun,
+    $rbi: player.rbi,
+    $aWalk: player.aWalk,
+    $strikeouts: player.strikeouts,
+    $stolenBases: player.stolenBases,
+    $caughtStealing: player.caughtStealing,
+    $avg: player.avg,
+    $onBasePercentage: player.onBasePercentage,
+    $sluggingPercentage: player.sluggingPercentage,
+    $onBasePlusSlugging: player.onBasePlusSlugging
+  });
 };
 
 export const deletePlayer = (id: number) => {
-  return db.prepare("DELETE FROM players WHERE id = ?").run(id);
+  return db.prepare("DELETE FROM players WHERE id = $id").run({ $id: id });
 };
 
 export default db;

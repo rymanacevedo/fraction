@@ -2,7 +2,9 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import * as db from "./database";
 import { createBaseballDescriptions } from "./services/ai";
-import { Player } from "../../shared/models/Player";
+import { serve } from "@hono/node-server";
+import { DBPlayer, Player } from "../../shared/models/Player";
+import { transformPlayer } from "../../shared/utils/TransformPlayer";
 
 const app = new Hono();
 
@@ -76,16 +78,14 @@ app.put("/api/players/:id", async (c) => {
 app.post("/api/players/:id/generate-description", async (c) => {
   try {
     const id = parseInt(c.req.param("id"));
-    const player: Player = db.getPlayerById(id);
+    const player = db.getPlayerById(id) as unknown as DBPlayer;
 
     if (!player) {
       return c.json({ error: "Player not found" }, 404);
     }
 
     // Here you would call the LLM service, for now it's just mock data
-    const description = `${player["Player name"]} is a ${player.position} player with ${player.Hits} career hits and ${player.Runs} home runs. With a batting average of ${player.AVG}, they rank #${Number(1).toString()} in hits per season.`;
-
-    db.updatePlayerDescription(id, description);
+    const description = `${player.playerName} is a ${player.position} player with ${player.hits} career hits and ${player.runs} home runs. With a batting average of ${player.avg}, they rank #${player.rank} in hits per season.`;
 
     return c.json({ description });
   } catch (error) {
@@ -125,20 +125,17 @@ app.post("/api/sync", async (c) => {
     const players: Player[] = await response.json();
 
     // Calculate ranks based on hits per season
-    const sortedPlayers = [...players].sort((a, b) => b.Hits - a.Hits);
+    const sortedPlayers: Player[] = [...players].sort(
+      (a, b) => b.Hits - a.Hits,
+    );
 
     for (let i = 0; i < sortedPlayers.length; i++) {
       const player = sortedPlayers[i];
 
       // Transform the API data to match our schema
-      const playerData = {
-        name: player["Player name"],
-        position: player.position,
-        hitsPerSeason: player.Hits,
-        rank: i + 1,
-      };
+      const playerWithRank = transformPlayer(player, i + 1);
 
-      db.createPlayer(playerData);
+      db.createPlayer(playerWithRank);
     }
 
     return c.json({ success: true, count: players.length });
@@ -148,4 +145,10 @@ app.post("/api/sync", async (c) => {
   }
 });
 
-export default app;
+const port = 3001;
+console.log(`Server is running on http://localhost:${port}`);
+
+serve({
+  fetch: app.fetch,
+  port,
+});

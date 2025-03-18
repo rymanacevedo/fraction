@@ -1,5 +1,6 @@
 {
-  "name": "backend",
+  "name": "@fraction/backend",
+  "type": "module",
   "scripts": {
     "dev": "bun run --hot src/index.ts"
   },
@@ -7,15 +8,12 @@
     "@ai-sdk/google": "^1.1.25",
     "@hono/node-server": "^1.13.8",
     "ai": "^4.1.61",
-    "better-sqlite3": "^11.9.0",
     "hono": "^4.7.4",
-    "sqlite3": "^5.1.7",
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.12",
-    "@types/bun": "latest",
     "@types/node": "^22.13.10",
+    "bun-types": "latest",
     "typescript": "^5.8.2"
   }
 }

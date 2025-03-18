@@ -27,7 +27,7 @@ export async function action({ request }: Route.ActionArgs) {
     aWalk: parseInt(entries.aWalk),
     strikeouts: parseInt(entries.strikeouts),
     stolenBases: parseInt(entries.stolenBases),
-    caughtStealing: parseInt(entries.caughtStealing),
+    caughtStealing: entries.caughtStealing === '--' ? -1 : parseInt(entries.caughtStealing),
     avg: parseFloat(entries.avg),
     onBasePercentage: parseFloat(entries.onBasePercentage),
     sluggingPercentage: parseFloat(entries.sluggingPercentage),

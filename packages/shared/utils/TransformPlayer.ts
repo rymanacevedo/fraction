@@ -17,7 +17,8 @@ export function transformPlayer(player: Player, rank: number) {
     aWalk: player["a walk"],
     strikeouts: player.Strikeouts,
     stolenBases: player["stolen base"],
-    caughtStealing: player["Caught stealing"],
+    caughtStealing:
+      player["Caught stealing"] === "--" ? -1 : player["Caught stealing"],
     avg: player.AVG,
     onBasePercentage: player["On-base Percentage"],
     sluggingPercentage: player["Slugging Percentage"],

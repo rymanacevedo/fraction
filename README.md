@@ -7,13 +7,13 @@ A monorepo containing a full-stack application for baseball statistics managemen
 
 ## Project Structure
 
-
+```
 fraction/
 ├── packages/
 │   ├── backend/        # Node.js backend service
 │   ├── frontend/       # React frontend application
 │   └── shared/         # Shared types and utilities
-
+```
 
 ## Packages
 

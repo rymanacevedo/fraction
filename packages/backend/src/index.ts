@@ -84,8 +84,16 @@ app.get("/api/players/:id/generate-description", async (c) => {
       return c.json({ error: "Player not found" }, 404);
     }
 
-    // Here you would call the LLM service, for now it's just mock data
-    const description = `${player.playerName} is a ${player.position} player with ${player.hits} career hits and ${player.runs} home runs. With a batting average of ${player.avg}, they rank #${player.rank} in hits per season.`;
+    const prompt = `
+    Describe this baseball player:
+    Name: ${player.playerName}
+    Position: ${player.position}
+    Hits: ${player.hits}
+    Home Runs: ${player.runs}
+    Batting Average: ${player.avg}
+    Rank: ${player.rank}`;
+
+    const { description } = await createBaseballDescriptions(prompt);
 
     return c.json({ description });
   } catch (error) {

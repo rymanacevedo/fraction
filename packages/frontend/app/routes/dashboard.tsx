@@ -1,9 +1,10 @@
-import { data, Outlet, useLoaderData, useNavigate } from "react-router";
-import type { Route } from "../+types/root";
+import { Outlet, data, useLoaderData, useNavigate } from "react-router";
 import type { DBPlayer } from "../../../shared/models/Player";
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const response = await fetch('https://effective-adventure-xrxjjr9j6793vr7g-3001.app.github.dev/api/players');
+export async function loader() {
+  const response = await fetch(
+    "https://effective-adventure-xrxjjr9j6793vr7g-3001.app.github.dev/api/players",
+  );
   const players: DBPlayer[] = await response.json();
   return data(players);
 }
@@ -61,9 +62,7 @@ export default function Dashboard() {
                   key={player.id}
                   className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600`}
                   onClick={() =>
-                    navigate(
-                      `/dashboard/player/${encodeURIComponent(player.id)}`,
-                    )
+                    navigate(`player/${encodeURIComponent(player.id)}`)
                   }
                 >
                   <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-200">

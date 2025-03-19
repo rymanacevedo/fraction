@@ -5,6 +5,7 @@ import {
   Scripts,
   ScrollRestoration,
   isRouteErrorResponse,
+  redirect,
 } from "react-router";
 
 import type { Route } from "./+types/root";

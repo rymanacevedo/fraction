@@ -47,7 +47,7 @@ export async function action({ request }: Route.ActionArgs) {
     },
   );
   // Redirect to the player detail page after successful update
-  return redirect(`/dashboard/player/${encodeURIComponent(updatedPlayer.id)}`);
+  return redirect(`/player/${encodeURIComponent(updatedPlayer.id)}`);
 }
 
 export default function PlayerEdit() {
